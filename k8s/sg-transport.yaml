@@ -94,7 +94,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ttl.sh/g3l00-sg-transport-backend:24h
+          image: ghcr.io/g3l00/sg-transport-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -198,7 +198,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ttl.sh/g3l00-sg-transport-frontend:24h
+          image: ghcr.io/g3l00/sg-transport-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
