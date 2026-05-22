@@ -3,6 +3,7 @@ services:
     name: sg-transport
     runtime: docker
     plan: free
+    autoDeployTrigger: commit
     dockerfilePath: ./Dockerfile.render
     dockerContext: .
     healthCheckPath: /api/transport/health
