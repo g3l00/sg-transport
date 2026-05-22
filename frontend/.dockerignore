@@ -1,0 +1,10 @@
+node_modules
+sg-transport/node_modules
+sg-transport/.angular
+sg-transport/dist
+sg-transport/.vscode
+sg-transport/.git
+sg-transport/.gitignore
+sg-transport/README.md
+npm-debug.log
+.DS_Store

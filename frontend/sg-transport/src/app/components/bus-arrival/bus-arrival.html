@@ -1,0 +1,61 @@
+<section class="arrival-panel">
+  <header class="panel-heading">
+    <div>
+      <p class="panel-kicker">Live Arrivals</p>
+      <h2>Services</h2>
+    </div>
+
+    @if (selectedStop()) {
+      <button type="button" (click)="refresh()" [disabled]="loading()">Refresh</button>
+    }
+  </header>
+
+  @if (!selectedStop()) {
+    <div class="empty-state">Select a bus stop.</div>
+  } @else {
+    <div class="selected-stop">
+      <span class="stop-code">{{ selectedStop()?.code }}</span>
+      <div>
+        <strong>{{ selectedStop()?.name }}</strong>
+        <small>{{ selectedStop()?.roadName }}</small>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state">Loading arrivals...</div>
+    } @else if (error()) {
+      <div class="error-state">{{ error() }}</div>
+    } @else if (arrivals().length === 0) {
+      <div class="empty-state">No services currently available.</div>
+    } @else {
+      <div class="arrival-list">
+        @for (service of arrivals(); track service.ServiceNo) {
+          <article class="service-row">
+            <div class="service-heading">
+              <span class="service-number">{{ service.ServiceNo }}</span>
+              <span class="operator">{{ service.Operator }}</span>
+            </div>
+
+            <div class="bus-times">
+              @for (bus of nextBuses(service); track $index) {
+                <div class="time-chip">
+                  <strong>{{ minutesUntil(bus) }}</strong>
+                  <small>{{ arrivalClock(bus) }}</small>
+                </div>
+              }
+            </div>
+
+            <div class="service-meta">
+              <span [class]="loadClass(service.NextBus?.Load)">
+                {{ loadLabel(service.NextBus?.Load) }}
+              </span>
+              @if (service.NextBus?.Feature) {
+                <span class="feature">{{ service.NextBus?.Feature }}</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

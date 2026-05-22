@@ -1,0 +1,10 @@
+.git
+.github
+backend/target
+frontend/node_modules
+frontend/sg-transport/node_modules
+frontend/sg-transport/.angular
+frontend/sg-transport/dist
+frontend/sg-transport/.vscode
+**/.DS_Store
+**/npm-debug.log

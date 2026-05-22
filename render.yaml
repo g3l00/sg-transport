@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sg-transport
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/transport/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: LTA_API_KEY
+        sync: false

@@ -1,0 +1,18 @@
+<main class="app-shell">
+  <header class="top-bar">
+    <div>
+      <p class="eyebrow">Singapore Transport</p>
+      <h1>{{ title() }}</h1>
+    </div>
+    <span class="status-pill">LTA DataMall</span>
+  </header>
+
+  <section class="dashboard">
+    <app-bus-search (stopSelected)="selectBusStop($event)"></app-bus-search>
+
+    <div class="content-grid">
+      <app-bus-map [busStop]="selectedStop()"></app-bus-map>
+      <app-bus-arrival [busStop]="selectedStop()"></app-bus-arrival>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,28 @@
+<section class="map-panel">
+  <header class="panel-heading">
+    <div>
+      <p class="panel-kicker">Map</p>
+      <h2>Stop Location</h2>
+    </div>
+  </header>
+
+  <div class="map-shell">
+    <div #mapContainer class="map-canvas" aria-label="Singapore bus stop map"></div>
+
+    @if (mapError()) {
+      <div class="map-message">{{ mapError() }}</div>
+    }
+
+    @if (busStop) {
+      <div class="map-badge">
+        <span>{{ busStop.code }}</span>
+        <strong>{{ busStop.name }}</strong>
+      </div>
+    } @else {
+      <div class="map-badge">
+        <span>Singapore</span>
+        <strong>Select a stop</strong>
+      </div>
+    }
+  </div>
+</section>

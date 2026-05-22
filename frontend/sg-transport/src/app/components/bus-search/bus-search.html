@@ -1,0 +1,57 @@
+<section class="search-panel">
+  <div class="panel-heading">
+    <div>
+      <p class="panel-kicker">Find Stop</p>
+      <h2>Search</h2>
+    </div>
+    <span class="count">{{ results().length }} results</span>
+  </div>
+
+  <form class="search-form" (ngSubmit)="search()">
+    <label for="bus-stop-search">Bus stop</label>
+    <div class="search-row">
+      <input
+        id="bus-stop-search"
+        name="busStopSearch"
+        type="search"
+        autocomplete="off"
+        [(ngModel)]="query"
+        placeholder="Victoria, National Library, 01012"
+      />
+      <button type="submit" [disabled]="loading()">
+        @if (loading()) {
+          Searching
+        } @else {
+          Search
+        }
+      </button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="status-message">{{ error() }}</p>
+  }
+
+  @if (results().length > 0) {
+    <div class="results-list">
+      @for (stop of results(); track stop.code) {
+        <button
+          class="result-item"
+          type="button"
+          [class.selected]="selectedCode() === stop.code"
+          (click)="selectStop(stop)"
+        >
+          <span class="stop-code">{{ stop.code }}</span>
+          <span class="stop-detail">
+            <strong>{{ stop.name }}</strong>
+            <small>{{ stop.roadName }}</small>
+          </span>
+        </button>
+      }
+    </div>
+  } @else if (!loading() && canCheckByCode()) {
+    <button class="code-lookup" type="button" (click)="checkByCode()">
+      Check stop {{ query.trim() }}
+    </button>
+  }
+</section>
