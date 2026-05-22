@@ -142,8 +142,16 @@ spec:
             httpGet:
               path: /api/transport/health
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
             periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /api/transport/health
+              port: 8080
+            failureThreshold: 18
+            periodSeconds: 10
+            timeoutSeconds: 5
 
 ---
 apiVersion: v1
