@@ -133,11 +133,11 @@ spec:
               value: "true"
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
               memory: "512Mi"
               cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
           livenessProbe:
             httpGet:
               path: /api/transport/health
@@ -149,7 +149,7 @@ spec:
             httpGet:
               path: /api/transport/health
               port: 8080
-            failureThreshold: 18
+            failureThreshold: 60
             periodSeconds: 10
             timeoutSeconds: 5
 
