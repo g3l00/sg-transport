@@ -9,6 +9,7 @@
 
   <section class="dashboard">
     <app-bus-search (stopSelected)="selectBusStop($event)"></app-bus-search>
+    <app-route-planner></app-route-planner>
 
     <div class="content-grid">
       <app-bus-map [busStop]="selectedStop()"></app-bus-map>

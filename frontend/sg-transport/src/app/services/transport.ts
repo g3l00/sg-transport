@@ -42,6 +42,32 @@ export interface BusArrivalResponse {
   Services: BusServiceArrival[];
 }
 
+export interface RouteLeg {
+  serviceNo: string;
+  operator: string;
+  direction: number;
+  from: BusStop;
+  to: BusStop;
+  fromSequence: number;
+  toSequence: number;
+  distanceKm: number;
+  stops: number;
+}
+
+export interface RouteOption {
+  type: 'direct' | 'transfer';
+  transferStop: BusStop | null;
+  legs: RouteLeg[];
+  totalDistanceKm: number;
+  totalStops: number;
+}
+
+export interface RoutePlanResponse {
+  from: BusStop;
+  to: BusStop;
+  routes: RouteOption[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -74,6 +100,11 @@ export class TransportService {
     return this.http.get<BusStopsResponse>(`${this.apiUrl}/bus-stops`).pipe(
       map((response) => response.value.map((stop) => this.toBusStop(stop))),
     );
+  }
+
+  planRoute(fromCode: string, toCode: string): Observable<RoutePlanResponse> {
+    const params = new HttpParams().set('from', fromCode).set('to', toCode);
+    return this.http.get<RoutePlanResponse>(`${this.apiUrl}/route-plan`, { params });
   }
 
   private searchFromBusStops(query: string): Observable<BusStop[]> {

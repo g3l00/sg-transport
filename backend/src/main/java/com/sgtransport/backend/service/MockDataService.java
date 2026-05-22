@@ -84,4 +84,112 @@ public class MockDataService {
             }
             """.formatted(busStopCode);
     }
+
+    public String getMockBusRoutes() {
+        return """
+            {
+              "odata.metadata": "mock",
+              "value": [
+                {
+                  "ServiceNo": "2",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 1,
+                  "BusStopCode": "01012",
+                  "Distance": 0.0,
+                  "WD_FirstBus": "0520",
+                  "WD_LastBus": "2350",
+                  "SAT_FirstBus": "0520",
+                  "SAT_LastBus": "2350",
+                  "SUN_FirstBus": "0600",
+                  "SUN_LastBus": "2350"
+                },
+                {
+                  "ServiceNo": "2",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 2,
+                  "BusStopCode": "01013",
+                  "Distance": 0.6,
+                  "WD_FirstBus": "0523",
+                  "WD_LastBus": "2353",
+                  "SAT_FirstBus": "0523",
+                  "SAT_LastBus": "2353",
+                  "SUN_FirstBus": "0603",
+                  "SUN_LastBus": "2353"
+                },
+                {
+                  "ServiceNo": "2",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 3,
+                  "BusStopCode": "01014",
+                  "Distance": 1.2,
+                  "WD_FirstBus": "0526",
+                  "WD_LastBus": "2356",
+                  "SAT_FirstBus": "0526",
+                  "SAT_LastBus": "2356",
+                  "SUN_FirstBus": "0606",
+                  "SUN_LastBus": "2356"
+                },
+                {
+                  "ServiceNo": "5",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 1,
+                  "BusStopCode": "01012",
+                  "Distance": 0.0,
+                  "WD_FirstBus": "0530",
+                  "WD_LastBus": "2340",
+                  "SAT_FirstBus": "0530",
+                  "SAT_LastBus": "2340",
+                  "SUN_FirstBus": "0605",
+                  "SUN_LastBus": "2340"
+                },
+                {
+                  "ServiceNo": "5",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 2,
+                  "BusStopCode": "01013",
+                  "Distance": 0.5,
+                  "WD_FirstBus": "0533",
+                  "WD_LastBus": "2343",
+                  "SAT_FirstBus": "0533",
+                  "SAT_LastBus": "2343",
+                  "SUN_FirstBus": "0608",
+                  "SUN_LastBus": "2343"
+                },
+                {
+                  "ServiceNo": "7",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 1,
+                  "BusStopCode": "01013",
+                  "Distance": 0.0,
+                  "WD_FirstBus": "0540",
+                  "WD_LastBus": "2335",
+                  "SAT_FirstBus": "0540",
+                  "SAT_LastBus": "2335",
+                  "SUN_FirstBus": "0610",
+                  "SUN_LastBus": "2335"
+                },
+                {
+                  "ServiceNo": "7",
+                  "Operator": "SBST",
+                  "Direction": 1,
+                  "StopSequence": 2,
+                  "BusStopCode": "01014",
+                  "Distance": 0.7,
+                  "WD_FirstBus": "0544",
+                  "WD_LastBus": "2339",
+                  "SAT_FirstBus": "0544",
+                  "SAT_LastBus": "2339",
+                  "SUN_FirstBus": "0614",
+                  "SUN_LastBus": "2339"
+                }
+              ]
+            }
+            """;
+    }
 }

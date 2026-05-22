@@ -1,0 +1,156 @@
+<section class="planner-panel">
+  <div class="panel-heading">
+    <div>
+      <p class="panel-kicker">Plan Trip</p>
+      <h2>Route Planner</h2>
+    </div>
+    <span class="count">{{ routePlan()?.routes?.length ?? 0 }} routes</span>
+  </div>
+
+  <div class="planner-grid">
+    <div class="stop-search">
+      <form class="search-form" (ngSubmit)="searchFrom()">
+        <label for="route-from">From</label>
+        <div class="search-row">
+          <input
+            id="route-from"
+            name="routeFrom"
+            type="search"
+            autocomplete="off"
+            [(ngModel)]="fromQuery"
+            placeholder="Victoria, National Library, 01012"
+          />
+          <button type="submit" [disabled]="loadingSide() === 'from'">
+            @if (loadingSide() === 'from') {
+              Searching
+            } @else {
+              Search
+            }
+          </button>
+        </div>
+      </form>
+
+      @if (selectedFrom(); as stop) {
+        <div class="selected-stop">
+          <span class="stop-code">{{ stop.code }}</span>
+          <span>
+            <strong>{{ stop.name }}</strong>
+            <small>{{ stop.roadName }}</small>
+          </span>
+        </div>
+      }
+
+      @if (fromResults().length > 0) {
+        <div class="results-list">
+          @for (stop of fromResults(); track stop.code) {
+            <button class="result-item" type="button" (click)="selectFrom(stop)">
+              <span class="stop-code">{{ stop.code }}</span>
+              <span class="stop-detail">
+                <strong>{{ stop.name }}</strong>
+                <small>{{ stop.roadName }}</small>
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="stop-search">
+      <form class="search-form" (ngSubmit)="searchTo()">
+        <label for="route-to">To</label>
+        <div class="search-row">
+          <input
+            id="route-to"
+            name="routeTo"
+            type="search"
+            autocomplete="off"
+            [(ngModel)]="toQuery"
+            placeholder="Rochor, Queen Street, 01014"
+          />
+          <button type="submit" [disabled]="loadingSide() === 'to'">
+            @if (loadingSide() === 'to') {
+              Searching
+            } @else {
+              Search
+            }
+          </button>
+        </div>
+      </form>
+
+      @if (selectedTo(); as stop) {
+        <div class="selected-stop">
+          <span class="stop-code">{{ stop.code }}</span>
+          <span>
+            <strong>{{ stop.name }}</strong>
+            <small>{{ stop.roadName }}</small>
+          </span>
+        </div>
+      }
+
+      @if (toResults().length > 0) {
+        <div class="results-list">
+          @for (stop of toResults(); track stop.code) {
+            <button class="result-item" type="button" (click)="selectTo(stop)">
+              <span class="stop-code">{{ stop.code }}</span>
+              <span class="stop-detail">
+                <strong>{{ stop.name }}</strong>
+                <small>{{ stop.roadName }}</small>
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="planner-actions">
+    <button class="plan-button" type="button" [disabled]="!canPlan()" (click)="planRoute()">
+      @if (planning()) {
+        Planning
+      } @else {
+        Plan route
+      }
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="status-message">{{ error() }}</p>
+  }
+
+  @if (routePlan(); as plan) {
+    @if (plan.routes.length > 0) {
+      <div class="route-list">
+        @for (option of plan.routes; track $index) {
+          <article class="route-option">
+            <header class="route-summary">
+              <div>
+                <p>{{ optionTitle(option) }}</p>
+                <h3>{{ optionServices(option) }}</h3>
+              </div>
+              <span>{{ option.totalStops }} stops - {{ option.totalDistanceKm }} km</span>
+            </header>
+
+            <div class="leg-list">
+              @for (leg of option.legs; track $index) {
+                <div class="route-leg">
+                  <span class="service-chip">{{ leg.serviceNo }}</span>
+                  <span class="leg-detail">
+                    <strong>{{ leg.from.name }} to {{ leg.to.name }}</strong>
+                    <small>{{ legDirection(leg) }} - {{ leg.stops }} stops - {{ leg.distanceKm }} km</small>
+                  </span>
+                </div>
+              }
+            </div>
+
+            @if (option.transferStop; as transferStop) {
+              <div class="transfer-stop">
+                Transfer at <strong>{{ transferStop.name }}</strong>
+                <span>{{ transferStop.code }}</span>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

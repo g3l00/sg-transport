@@ -1,6 +1,7 @@
 package com.sgtransport.backend.controller;
 
 import com.sgtransport.backend.model.BusStop;
+import com.sgtransport.backend.model.RoutePlanResponse;
 import com.sgtransport.backend.service.LtaApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,5 +43,14 @@ public class TransportController {
     public ResponseEntity<List<BusStop>> searchBusStop(@RequestParam String name) {
         List<BusStop> results = ltaApiService.searchBusStop(name);
         return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/route-plan")
+    public ResponseEntity<RoutePlanResponse> planRoute(
+            @RequestParam String from,
+            @RequestParam String to
+    ) {
+        RoutePlanResponse result = ltaApiService.planRoute(from, to);
+        return ResponseEntity.ok(result);
     }
 }
