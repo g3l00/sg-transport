@@ -8,5 +8,7 @@ frontend/sg-transport/node_modules/
 frontend/sg-transport/.angular/
 frontend/sg-transport/dist/
 
+.aws-deploy-temp/
+
 .DS_Store
 npm-debug.log
