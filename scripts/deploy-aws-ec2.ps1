@@ -151,7 +151,7 @@ $parameterName = "/$ServiceName/LTA_API_KEY"
 $parameterArn = "arn:aws:ssm:$Region`:$accountId`:parameter$parameterName"
 $roleName = "SgTransportEc2Role-$ServiceName"
 $profileName = "SgTransportEc2Profile-$ServiceName"
-$securityGroupName = "$ServiceName-web"
+$securityGroupName = "app-$ServiceName-web"
 $tempDir = Join-Path $repoRoot ".aws-deploy-temp"
 
 New-Item -ItemType Directory -Force -Path $tempDir | Out-Null

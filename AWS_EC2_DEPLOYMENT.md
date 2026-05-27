@@ -139,7 +139,7 @@ Delete the security group after the instance is terminated:
 
 ```powershell
 $sgId = aws ec2 describe-security-groups `
-  --filters "Name=group-name,Values=sg-transport-web" `
+  --filters "Name=group-name,Values=app-sg-transport-web" `
   --query "SecurityGroups[0].GroupId" `
   --region ap-southeast-1 `
   --output text
