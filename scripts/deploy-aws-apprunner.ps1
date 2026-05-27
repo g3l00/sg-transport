@@ -15,14 +15,53 @@ function Assert-Command {
     }
 }
 
+function Format-AwsCommandForError {
+    param([string[]]$Arguments)
+
+    $safeArguments = New-Object System.Collections.Generic.List[string]
+    $maskNext = $false
+
+    foreach ($argument in $Arguments) {
+        if ($maskNext) {
+            $safeArguments.Add("***")
+            $maskNext = $false
+            continue
+        }
+
+        $safeArguments.Add($argument)
+
+        if ($argument -in @("--value", "--password", "--secret-string")) {
+            $maskNext = $true
+        }
+    }
+
+    return "aws $($safeArguments -join ' ')"
+}
+
+function Invoke-Aws {
+    param([string[]]$Arguments)
+
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+
+    try {
+        $output = & aws @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+
+    if ($exitCode -ne 0) {
+        throw "AWS CLI command failed: $(Format-AwsCommandForError $Arguments)`n$($output -join [Environment]::NewLine)"
+    }
+
+    return $output
+}
+
 function Invoke-JsonAws {
     param([string[]]$Arguments)
 
-    $output = & aws @Arguments --output json
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "AWS CLI command failed: aws $($Arguments -join ' ')"
-    }
+    $output = Invoke-Aws ($Arguments + @("--output", "json"))
 
     if (-not $output) {
         return $null
@@ -34,8 +73,26 @@ function Invoke-JsonAws {
 function Test-AwsResource {
     param([string[]]$Arguments)
 
-    & aws @Arguments *> $null
-    return $LASTEXITCODE -eq 0
+    try {
+        Invoke-Aws $Arguments | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Write-JsonFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$Value,
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [int]$Depth = 8
+    )
+
+    $json = $Value | ConvertTo-Json -Depth $Depth
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $json, $utf8NoBom)
 }
 
 Assert-Command "aws"
@@ -91,16 +148,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Storing LTA API key in SSM Parameter Store..."
-aws ssm put-parameter `
-    --name $parameterName `
-    --type SecureString `
-    --value $env:LTA_API_KEY `
-    --overwrite `
-    --region $Region `
-    *> $null
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to store LTA_API_KEY in SSM Parameter Store."
-}
+Invoke-Aws @(
+    "ssm", "put-parameter",
+    "--name", $parameterName,
+    "--type", "SecureString",
+    "--value", $env:LTA_API_KEY,
+    "--overwrite",
+    "--region", $Region
+) | Out-Null
 
 $tempDir = Join-Path $repoRoot ".aws-deploy-temp"
 New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
@@ -112,7 +167,7 @@ $sourceConfigPath = Join-Path $tempDir "apprunner-source-config.json"
 $instanceConfigPath = Join-Path $tempDir "apprunner-instance-config.json"
 $healthConfigPath = Join-Path $tempDir "apprunner-health-config.json"
 
-@{
+Write-JsonFile -Path $accessTrustPath -Depth 8 -Value @{
     Version = "2012-10-17"
     Statement = @(
         @{
@@ -121,9 +176,9 @@ $healthConfigPath = Join-Path $tempDir "apprunner-health-config.json"
             Action = "sts:AssumeRole"
         }
     )
-} | ConvertTo-Json -Depth 8 | Set-Content -Path $accessTrustPath -Encoding utf8
+}
 
-@{
+Write-JsonFile -Path $instanceTrustPath -Depth 8 -Value @{
     Version = "2012-10-17"
     Statement = @(
         @{
@@ -132,9 +187,9 @@ $healthConfigPath = Join-Path $tempDir "apprunner-health-config.json"
             Action = "sts:AssumeRole"
         }
     )
-} | ConvertTo-Json -Depth 8 | Set-Content -Path $instanceTrustPath -Encoding utf8
+}
 
-@{
+Write-JsonFile -Path $instancePolicyPath -Depth 8 -Value @{
     Version = "2012-10-17"
     Statement = @(
         @{
@@ -152,34 +207,38 @@ $healthConfigPath = Join-Path $tempDir "apprunner-health-config.json"
             Resource = "*"
         }
     )
-} | ConvertTo-Json -Depth 8 | Set-Content -Path $instancePolicyPath -Encoding utf8
+}
 
 if (-not (Test-AwsResource @("iam", "get-role", "--role-name", $accessRoleName))) {
     Write-Host "Creating App Runner ECR access role..."
-    aws iam create-role `
-        --role-name $accessRoleName `
-        --assume-role-policy-document "file://$accessTrustPath" `
-        *> $null
+    Invoke-Aws @(
+        "iam", "create-role",
+        "--role-name", $accessRoleName,
+        "--assume-role-policy-document", "file://$accessTrustPath"
+    ) | Out-Null
 }
 
-aws iam attach-role-policy `
-    --role-name $accessRoleName `
-    --policy-arn "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess" `
-    *> $null
+Invoke-Aws @(
+    "iam", "attach-role-policy",
+    "--role-name", $accessRoleName,
+    "--policy-arn", "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
+) | Out-Null
 
 if (-not (Test-AwsResource @("iam", "get-role", "--role-name", $instanceRoleName))) {
     Write-Host "Creating App Runner instance role..."
-    aws iam create-role `
-        --role-name $instanceRoleName `
-        --assume-role-policy-document "file://$instanceTrustPath" `
-        *> $null
+    Invoke-Aws @(
+        "iam", "create-role",
+        "--role-name", $instanceRoleName,
+        "--assume-role-policy-document", "file://$instanceTrustPath"
+    ) | Out-Null
 }
 
-aws iam put-role-policy `
-    --role-name $instanceRoleName `
-    --policy-name "$ServiceName-ssm-access" `
-    --policy-document "file://$instancePolicyPath" `
-    *> $null
+Invoke-Aws @(
+    "iam", "put-role-policy",
+    "--role-name", $instanceRoleName,
+    "--policy-name", "$ServiceName-ssm-access",
+    "--policy-document", "file://$instancePolicyPath"
+) | Out-Null
 
 $accessRole = Invoke-JsonAws @("iam", "get-role", "--role-name", $accessRoleName)
 $instanceRole = Invoke-JsonAws @("iam", "get-role", "--role-name", $instanceRoleName)
@@ -187,7 +246,7 @@ $instanceRole = Invoke-JsonAws @("iam", "get-role", "--role-name", $instanceRole
 Write-Host "Waiting briefly for IAM role propagation..."
 Start-Sleep -Seconds 12
 
-@{
+Write-JsonFile -Path $sourceConfigPath -Depth 10 -Value @{
     AuthenticationConfiguration = @{
         AccessRoleArn = $accessRole.Role.Arn
     }
@@ -205,25 +264,27 @@ Start-Sleep -Seconds 12
             }
         }
     }
-} | ConvertTo-Json -Depth 10 | Set-Content -Path $sourceConfigPath -Encoding utf8
+}
 
-@{
+Write-JsonFile -Path $instanceConfigPath -Depth 6 -Value @{
     InstanceRoleArn = $instanceRole.Role.Arn
-} | ConvertTo-Json -Depth 6 | Set-Content -Path $instanceConfigPath -Encoding utf8
+}
 
-@{
+Write-JsonFile -Path $healthConfigPath -Depth 6 -Value @{
     Protocol = "HTTP"
     Path = "/api/transport/health"
     Interval = 10
     Timeout = 5
     HealthyThreshold = 1
     UnhealthyThreshold = 5
-} | ConvertTo-Json -Depth 6 | Set-Content -Path $healthConfigPath -Encoding utf8
+}
 
-$serviceArn = aws apprunner list-services `
-    --region $Region `
-    --query "ServiceSummaryList[?ServiceName=='$ServiceName'].ServiceArn | [0]" `
-    --output text
+$serviceArn = Invoke-Aws @(
+    "apprunner", "list-services",
+    "--region", $Region,
+    "--query", "ServiceSummaryList[?ServiceName=='$ServiceName'].ServiceArn | [0]",
+    "--output", "text"
+)
 
 if ($serviceArn -and $serviceArn -ne "None") {
     Write-Host "Updating App Runner service $ServiceName..."
